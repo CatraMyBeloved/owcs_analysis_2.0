@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.so
+.Python
+env/
+venv/
+.env
+
+# R
+.Rhistory
+.RData
+.Rproj.user/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
