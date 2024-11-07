@@ -69,7 +69,9 @@ class Visualizer:
 
     def regression(self, x, y, regression_type="linear", function=None):
         x_data = self._filtered_wide_data[x].values.reshape(-1, 1)
+        x_data_normal = self._filtered_wide_data[x].values
         y_data = self._filtered_wide_data[y].values.reshape(-1, 1)
+        y_data_normal = self._filtered_wide_data[y].values
         regression_model = Regression(self._filtered_wide_data)
 
         plt.figure(figsize=(12, 8))
@@ -82,7 +84,7 @@ class Visualizer:
             plt.plot(x_range, model.predict(x_range))
             plt.show()
         elif regression_type == "logistic":
-            model = regression_model.logistic_regression(x_data, y_data)
+            model = regression_model.logistic_regression(x_data, y_data_normal)
             plt.plot(x_range, model.predict(x_range))
             plt.show()
         elif regression_type == "custom" & function:
