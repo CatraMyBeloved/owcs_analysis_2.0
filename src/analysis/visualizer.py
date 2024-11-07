@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+import statsmodels
 
 
 class Visualizer:
@@ -18,7 +19,7 @@ class Visualizer:
         long_data = pd.melt(wide_data, id_vars= self._id_vars, value_vars= self._value_vars, var_name=
                                                'stat_type', value_name='stat_value')
         return long_data
-    def style_setup(self, style="darkgrid", context="talk"):
+    def style_setup(self, style="darkgrid", context="talk", figsize = ()):
         sns.set_style(style)
         sns.set_context(context, font_scale=1.5)
         sns.despine()
@@ -54,16 +55,15 @@ class Visualizer:
         plt.tight_layout()
         plt.show()
 
-    def winrate(self, x_col, n_bins=15, order=1, lowess=False, logx=False, title=None, hue=None, color="darkblue"):
+    def winrate(self, x_col = 'stat_value', n_bins=15, order=1, lowess=False, logx=False, title=None, hue=None, color="darkblue"):
         bins = pd.cut(self._filtered_data[x_col], n_bins)
 
-        grouped_data = self._filtered_data.groupby(bins)["result"].mean()
+        grouped_data = self._filtered_data.groupby(bins, observed=False )["result"].mean()
 
         x = pd.IntervalIndex(grouped_data.index).mid
         y = grouped_data.values
         plot_data = pd.DataFrame({"x": x, "y": y})
         plt.figure(figsize=(12, 8))
-
         if hue:
             sns.regplot(data=plot_data, x="x", y="y", order=order, lowess=lowess, logx=logx, hue=hue)
         else:
@@ -72,11 +72,13 @@ class Visualizer:
         if title:
             plt.title(title)
         plt.tight_layout()
+        plt.ylim(bottom=0)
         plt.show()
 
-    def simple_histogram(self, x_col, n_bins = 15, title = None, hue = 'result',multiple = "layer", color="darkblue"):
+    def simple_histogram(self, x_col = 'stat_value', n_bins = 15, title = None, hue = 'result',multiple = "layer", color="darkblue"):
+        plt.figure(figsize=(12, 8))
         if hue:
-            sns.histplot(data = self._filtered_data, x=x_col, bins=n_bins, hue=hue, multiple = multiple)
+            sns.histplot(data = self._filtered_data, x='stat_value', bins=n_bins, hue=hue, multiple = multiple)
         else:
             sns.histplot(data=self._filtered_data, x=x_col, bins=n_bins, color = color, multiple=multiple)
 
@@ -86,6 +88,7 @@ class Visualizer:
         plt.show()
 
     def histogram_2d(self, x_col, y_col, n_bins = 15, title = None):
+        plt.figure(figsize=(12, 12))
         sns.histplot(data = self._filtered_data, x=x_col, y=y_col, bins=n_bins)
 
         if title:

@@ -34,7 +34,7 @@ class AnalysisPreparation:
             match_data (DataFrame): DataFrame containing match-specific data.
         """
         self.player_data = player_data
-        self.match_data = match_data
+        self.match_data = match_data.drop_duplicates(subset = ['match_id'])
         self.stat_weights = np.array([2, 0.5, 0.001, 0.001, 1])
         self.match_ids = set(match_data['match_id'])
         self.stat_weight_adjustment = {
@@ -136,6 +136,7 @@ class AnalysisPreparation:
         match_data_filtered = match_data_filtered.set_index('match_id')
 
         for match_id in match_ids:
+            self.logger.info(match_id)
             match_row = match_data_filtered.loc[match_id]
 
             team_1_points = match_row['faction_1_map_scores']
@@ -167,7 +168,7 @@ class AnalysisPreparation:
     def validate_durations(self):
 
         def _is_valid_duration(row):
-            return row['duration'] > ((sum(row['faction_1_map_scores']) + sum(row['faction_2_map_scores'])) * 120)
+            return row['duration'] > ((sum(row['faction_1_map_scores']) + sum(row['faction_2_map_scores'])) * 180)
 
         boolean = self.match_data.apply(_is_valid_duration, axis=1)
 
@@ -177,7 +178,6 @@ class AnalysisPreparation:
 
         self.match_data = self.match_data[self.match_data['match_id'].isin(ids_to_keep)]
         self.player_data = self.player_data[self.player_data['match_id'].isin(ids_to_keep)]
-
     def calculate_derived(self):
         """
         Calculate derived statistics (per 10 minutes) for specified columns.

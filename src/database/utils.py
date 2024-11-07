@@ -1,11 +1,11 @@
 from .database_manager import DatabaseManager
 from src.data_acquisition import FACEITBot, DataMuncher, scrap_championship
 
-def save_championship(championship_id, database_path = "data/overwatch_data.db"):
+def save_championship(championship_id, database_file = "overwatch_data.db"):
     bot = FACEITBot()
     muncher = DataMuncher()
-    db_manager = DatabaseManager(database_path)
-    match_ids = scrap_championship('3976270f-6138-4289-81d9-998927cce41e', bot)
+    db_manager = DatabaseManager(database_file)
+    match_ids = scrap_championship(championship_id, bot)
 
     counter = 0
     last_match_stats = []
