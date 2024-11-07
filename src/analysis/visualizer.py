@@ -1,77 +1,88 @@
 import matplotlib.pyplot as plt
+import pandas as pd
 import seaborn as sns
 
-from .base_analyzer import BaseAnalyzer
 
+class Visualizer:
+    def __init__(self, data):
+        self._data = data
+        self._filtered_data = data
+        self._filter = None
+        self.style_setup()
 
-class Visualizer(BaseAnalyzer):
+    def style_setup(self, style="darkgrid", context="talk"):
+        sns.set_style(style)
+        sns.set_context(context, font_scale=1.5)
+        sns.despine()
 
-    def __init__(self, player_data, match_data, team_dict):
-        super().__init__(player_data, match_data, team_dict)
+    def filter_by(self, **kwargs):
+        self._filtered_data = self._data.copy()
+        for column, value in kwargs.items():
+            self._filtered_data = self._filtered_data[self._filtered_data[column] == value]
+        return self
 
-    def plot_player_stats(self, player_name, stats_to_compare=None):
+    def basic_relationship(self, x_col, y_col, kind="scatter", title=None, hue=None, color="darkblue"):
+        plt.figure(figsize=(12, 8))
+        if hue:
+            sns.relplot(data=self._filtered_data, kind=kind, x=x_col, y=y_col, hue=hue, color=color)
+        else:
+            sns.relplot(data=self._filtered_data, kind=kind, x=x_col, y=y_col, color=color)
 
-        if stats_to_compare is None:
-            stats_to_compare = self._standard_comparison
-
-        filtered_data = self._long_data[(self._long_data['nickname'] == player_name) &
-                                        (self._long_data['stat_type'].isin(stats_to_compare))
-                                        ]
-        grid = sns.FacetGrid(data=filtered_data,
-                             col='stat_type',
-                             col_wrap=3,
-                             height=5,
-                             aspect=1.5)
-
-        grid.map(
-            sns.boxplot,
-            'result',
-            'value'
-        )
-
-        grid.fig.suptitle(f'Stats for {player_name}')
-        grid.set_titles('{col_name} Stats')
-        grid.set_axis_labels('Result', 'Value')
+        if title:
+            plt.title(title)
         plt.tight_layout()
+        plt.show()
 
-        return grid
+    def regression(self, x_col, y_col, order=1, lowess=False, logx=False, title=None, hue=None, color="darkblue"):
+        plt.figure(figsize=(12, 8))
+        if hue:
+            sns.regplot(data=self._filtered_data, x=x_col, y=y_col, order=order, lowess=lowess, logx=logx, color=color,
+                        hue=hue)
+        else:
+            sns.regplot(data=self._filtered_data, x=x_col, y=y_col, order=order, lowess=lowess, logx=logx, color=color)
 
-    def compare_player_stats(self, player_names, stats_to_compare=None):
+        if title:
+            plt.title(title)
+        plt.tight_layout()
+        plt.show()
 
-        if stats_to_compare is None:
-            stats_to_compare = self._standard_comparison
+    def winrate(self, x_col, n_bins=15, order=1, lowess=False, logx=False, title=None, hue=None, color="darkblue"):
+        bins = pd.cut(self._filtered_data[x_col], n_bins)
 
-        filtered_data = self._long_data[(self._long_data['nickname'].isin(player_names)) &
-                                        (self._long_data['stat_type'].isin(stats_to_compare))
-                                        ]
+        grouped_data = self._filtered_data.groupby(bins)["result"].mean()
 
-        grid = sns.FacetGrid(filtered_data, col='stat_type', col_wrap=3, height=5, aspect=1.5)
+        x = pd.IntervalIndex(grouped_data.index).mid
+        y = grouped_data.values
+        plot_data = pd.DataFrame({"x": x, "y": y})
+        plt.figure(figsize=(12, 8))
 
-        grid.map(
-            sns.boxplot,
-            'nickname',
-            'value',
-            'result'
-        )
+        if hue:
+            sns.regplot(data=plot_data, x="x", y="y", order=order, lowess=lowess, logx=logx, hue=hue)
+        else:
+            sns.regplot(data=plot_data, x="x", y="y", order=order, lowess=lowess, logx=logx, color = color)
 
-        grid.fig.suptitle(f'Comparison for {player_names}')
+        if title:
+            plt.title(title)
+        plt.tight_layout()
+        plt.show()
 
-        grid.set_titles('{col_name}')
-        grid.set_axis_labels('Player', 'Value')
+    def simple_histogram(self, x_col, n_bins = 15, title = None, hue = 'result',multiple = "layer", color="darkblue"):
+        if hue:
+            sns.histplot(data = self._filtered_data, x=x_col, bins=n_bins, hue=hue, multiple = multiple)
+        else:
+            sns.histplot(data=self._filtered_data, x=x_col, bins=n_bins, color = color, multiple=multiple)
 
-        return grid
+        if title:
+            plt.title(title)
+        plt.tight_layout()
+        plt.show()
 
-    def plot_averages(self, player_names, stats_to_plot=None):
+    def histogram_2d(self, x_col, y_col, n_bins = 15, title = None):
+        sns.histplot(data = self._filtered_data, x=x_col, y=y_col, bins=n_bins)
 
-        if stats_to_plot is None:
-            stats_to_plot = self._standard_comparison
+        if title:
+            plt.title(title)
 
-        filtered_data = self._long_data[(self._long_data['nickname'].isin(player_names)) &
-                                        (self._long_data['stat_type'].isin(stats_to_plot))
-                                        ]
+        plt.tight_layout()
+        plt.show()
 
-        grid = sns.FacetGrid(filtered_data, col='stat_type', col_wrap=3, height=5, aspect=1.5, sharey=False)
-
-        grid.map(sns.barplot, 'nickname', 'value')
-
-        return grid
