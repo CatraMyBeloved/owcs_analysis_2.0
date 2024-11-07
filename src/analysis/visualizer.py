@@ -10,6 +10,7 @@ class Visualizer:
         self._value_vars = ['eliminations', 'assists', 'deaths', 'kd_ratio', 'damage_dealt', 'healing_done',
                             'damage_mitigated', 'deaths_per_10', 'eliminations_per_10', 'assists_per_10',
                             'damage_dealt_per_10', 'healing_done_per_10', 'value']
+        self._wide_data = data
         self._data = self._convert_to_long(data)
         self._filtered_data = self._data
         self._filter = None
@@ -19,7 +20,7 @@ class Visualizer:
         long_data = pd.melt(wide_data, id_vars= self._id_vars, value_vars= self._value_vars, var_name=
                                                'stat_type', value_name='stat_value')
         return long_data
-    def style_setup(self, style="darkgrid", context="talk", figsize = ()):
+    def style_setup(self, style="darkgrid", context="talk"):
         sns.set_style(style)
         sns.set_context(context, font_scale=1.5)
         sns.despine()
@@ -33,9 +34,9 @@ class Visualizer:
     def basic_relationship(self, x_col, y_col, kind="scatter", title=None, hue=None, color="darkblue"):
         plt.figure(figsize=(12, 8))
         if hue:
-            sns.relplot(data=self._filtered_data, kind=kind, x=x_col, y=y_col, hue=hue, color=color)
+            sns.relplot(data=self._wide_data, kind=kind, x=x_col, y=y_col, hue=hue, color=color)
         else:
-            sns.relplot(data=self._filtered_data, kind=kind, x=x_col, y=y_col, color=color)
+            sns.relplot(data=self._wide_data, kind=kind, x=x_col, y=y_col, color=color)
 
         if title:
             plt.title(title)
@@ -89,7 +90,7 @@ class Visualizer:
 
     def histogram_2d(self, x_col, y_col, n_bins = 15, title = None):
         plt.figure(figsize=(12, 12))
-        sns.histplot(data = self._filtered_data, x=x_col, y=y_col, bins=n_bins)
+        sns.histplot(data = self._wide_data, x=x_col, y=y_col, bins=n_bins)
 
         if title:
             plt.title(title)

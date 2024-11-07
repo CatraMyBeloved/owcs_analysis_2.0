@@ -168,7 +168,7 @@ class AnalysisPreparation:
     def validate_durations(self):
 
         def _is_valid_duration(row):
-            return row['duration'] > ((sum(row['faction_1_map_scores']) + sum(row['faction_2_map_scores'])) * 180)
+            return row['duration'] > ((sum(row['faction_1_map_scores']) + sum(row['faction_2_map_scores'])) * 120)
 
         boolean = self.match_data.apply(_is_valid_duration, axis=1)
 
