@@ -5,11 +5,19 @@ import seaborn as sns
 
 class Visualizer:
     def __init__(self, data):
-        self._data = data
-        self._filtered_data = data
+        self._id_vars = ['nickname', 'match_id', 'role', 'mode', 'map', 'duration', 'result']
+        self._value_vars = ['eliminations', 'assists', 'deaths', 'kd_ratio', 'damage_dealt', 'healing_done',
+                            'damage_mitigated', 'deaths_per_10', 'eliminations_per_10', 'assists_per_10',
+                            'damage_dealt_per_10', 'healing_done_per_10', 'value']
+        self._data = self._convert_to_long(data)
+        self._filtered_data = self._data
         self._filter = None
         self.style_setup()
 
+    def _convert_to_long(self, wide_data):
+        long_data = pd.melt(wide_data, id_vars= self._id_vars, value_vars= self._value_vars, var_name=
+                                               'stat_type', value_name='stat_value')
+        return long_data
     def style_setup(self, style="darkgrid", context="talk"):
         sns.set_style(style)
         sns.set_context(context, font_scale=1.5)
